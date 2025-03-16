@@ -1,0 +1,26 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: my-app
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/nampro2002/my-app.git
+    targetRevision: HEAD
+    path: environments/staging/apps
+  destination:
+    server: https://kubernetes.default.svc
+  syncPolicy:
+    automated:
+      prune: true        # Tự động xóa các resource không còn trong Git repo.
+      selfHeal: true     # Tự động khôi phục nếu resource bị thay đổi ngoài ArgoCD.
+      allowEmpty: true   # Cho phép deploy ngay cả khi Git repo rỗng.
+    syncOptions:
+      - Validate=true                  # Bật kiểm tra tính hợp lệ của manifest trước khi deploy.
+      - CreateNamespace=false          # Không tự động tạo namespace nếu chưa tồn tại.
+      - PrunePropagationPolicy=foreground  # Xóa phụ thuộc trước khi xóa resource chính.
+      - PruneLast=true                 # Chỉ thực hiện prune sau khi sync xong.
